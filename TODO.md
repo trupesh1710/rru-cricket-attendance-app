@@ -1,19 +1,9 @@
-# Fix Firestore Permission Error in add-admin.js
+# TODO - Password Reset Flow Testing
 
-## Problem
-- add-admin.js script fails with PERMISSION_DENIED error when trying to write to Firestore
-- Error occurs because script uses client Firebase SDK without authentication
-- Firestore security rules require authentication for all write operations
-
-## Solution Plan
-- [x] Update package-add-admin.json to include firebase-admin SDK
-- [x] Modify add-admin.js to use Firebase Admin SDK instead of client SDK
-- [ ] Guide user to download/create Firebase service account key
-- [ ] Test the updated script to ensure admin user creation works
-
-## Files to Modify
-- rru-cricket-attendance/package-add-admin.json
-- rru-cricket-attendance/add-admin.js
-
-## Next Steps
-- Install dependencies and test the fix
+- [ ] Test sending OTP to the registered email.
+- [ ] Verify OTP input and validation.
+- [ ] Enter new password twice and check for matching validation.
+- [ ] Submit new password and confirm success message.
+- [ ] Verify that the password is updated in Firebase Authentication.
+- [ ] Test login with the new password to confirm reset success.
+- [ ] Check for error handling on invalid OTP or mismatched passwords.

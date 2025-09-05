@@ -1,16 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
+import emailjs from '@emailjs/browser';
+import { generateOtp, sendOtpEmail } from "../utils/otpUtils";
 
 export default function RegisterScreen({ onBack, onRegister }) {
   const { register, error } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    username: '',
     password: '',
     confirmPassword: ''
   });
+  const [otp, setOtp] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    emailjs.init('pq9rl6ss1CvmYldsW'); // Updated with your Public Key
+  }, []);
+
+  const handleSendOtp = async () => {
+    if (!formData.email) {
+      setLocalError("Please enter email");
+      return;
+    }
+
+    try {
+      setLocalError('');
+      const otp = generateOtp();
+      setGeneratedOtp(otp);
+      await sendOtpEmail(formData.email, otp);
+      setOtpSent(true);
+    } catch (err) {
+      setLocalError(err.message);
+    }
+  };
+
+  const handleVerifyOtp = () => {
+    if (!otp) {
+      setLocalError("Please enter OTP");
+      return;
+    }
+
+    if (otp === generatedOtp) {
+      setOtpVerified(true);
+      setLocalError('');
+    } else {
+      setLocalError("Invalid OTP");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,21 +68,34 @@ export default function RegisterScreen({ onBack, onRegister }) {
       return;
     }
 
-    try {
-      await register(formData.email, formData.password, {
-        name: formData.name,
-        email: formData.email,
-        username: formData.username
-      });
-      
-      // Registration successful, call the parent callback
-      onRegister({
-        name: formData.name,
-        email: formData.email,
-        username: formData.username
-      }, "register");
-    } catch (err) {
-      setLocalError(err.message);
+    if (!otpSent) {
+      await handleSendOtp();
+    } else if (!otpVerified) {
+      handleVerifyOtp();
+    } else {
+      try {
+        await register(formData.email, formData.password, {
+          name: formData.name,
+          email: formData.email
+        });
+
+        onRegister({
+          name: formData.name,
+          email: formData.email
+        }, "register");
+
+        setPopupMessage("Registration Successful! Your account has been created successfully.");
+        setShowPopup(true);
+      } catch (err) {
+        if (err.code === 'auth/email-already-in-use' || err.message.includes('email-already-in-use') || err.message.includes('already in use')) {
+          // Suppress duplicate error message since popup is shown elsewhere
+          // setLocalError('');
+          setPopupMessage("The email address is already in use by another account.");
+          setShowPopup(true);
+        } else {
+          setLocalError(err.message);
+        }
+      }
     }
   };
 
@@ -110,19 +165,6 @@ export default function RegisterScreen({ onBack, onRegister }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Username</label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Choose a username"
-              />
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
               <input
                 type="password"
@@ -148,15 +190,46 @@ export default function RegisterScreen({ onBack, onRegister }) {
               />
             </div>
 
+            {otpSent && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">OTP</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter OTP"
+                />
+              </div>
+            )}
+
             <button
               type="submit"
               className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
-              Create Account
+              {otpSent ? 'Verify & Register' : 'Send OTP'}
             </button>
           </form>
         </div>
       </div>
+
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+          <div className="bg-slate-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-white/20">
+            <h2 className="text-2xl font-extrabold mb-4 bg-gradient-to-r from-white via-blue-400 to-white bg-clip-text text-transparent">
+              {popupMessage === "Registration Successful! Your account has been created successfully." ? "Registration Successful" : "Error"}
+            </h2>
+            <p className="mb-6 text-white">{popupMessage}</p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

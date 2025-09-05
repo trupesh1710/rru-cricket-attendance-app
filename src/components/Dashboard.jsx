@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import LocationAttendanceScreen from './LocationAttendanceScreen.jsx';
 import ViewAttendanceScreen from './ViewAttendanceScreen.jsx';
 import UserProfileScreen from './UserProfileScreen.jsx';
+import ReportsScreen from './ReportsScreen.jsx';
 
 export default function Dashboard({ user, onLogout }) {
   const [showLocationAttendance, setShowLocationAttendance] = useState(false);
   const [showViewAttendance, setShowViewAttendance] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   if (showLocationAttendance) {
     return <LocationAttendanceScreen user={user} onBack={() => setShowLocationAttendance(false)} />;
@@ -18,6 +20,10 @@ export default function Dashboard({ user, onLogout }) {
 
   if (showUserProfile) {
     return <UserProfileScreen user={user} onBack={() => setShowUserProfile(false)} />;
+  }
+
+  if (showReports) {
+    return <ReportsScreen user={user} onBack={() => setShowReports(false)} />;
   }
 
   return (
@@ -51,7 +57,10 @@ export default function Dashboard({ user, onLogout }) {
             >
               View Attendance
             </button>
-            <button className="px-6 py-3 bg-white/10 rounded-xl font-semibold text-white border border-white/20 hover:bg-white/20 transition-all duration-300">
+            <button
+              onClick={() => setShowReports(true)}
+              className="px-6 py-3 bg-white/10 rounded-xl font-semibold text-white border border-white/20 hover:bg-white/20 transition-all duration-300"
+            >
               Generate Reports
             </button>
             <button
