@@ -89,7 +89,10 @@ export function useAuth() {
   const logout = async () => {
     try {
       setError(null);
+      // Sign out from Firebase Auth (for regular users)
       await signOut(auth);
+      // Also clear user state (for admin users and any other cases)
+      setUser(null);
     } catch (err) {
       setError(err.message);
       throw err;
@@ -112,12 +115,7 @@ export function useAuth() {
         throw new Error('Invalid admin credentials');
       }
 
-      const generateAdminToken = httpsCallable(functions, 'generateAdminToken');
-      const result = await generateAdminToken({ adminId });
-      const { token } = result.data;
-
-      const userCredential = await signInWithCustomToken(auth, token);
-
+      // Create admin user object without Firebase Auth
       const adminUser = {
         uid: adminId,
         name: adminData.name,

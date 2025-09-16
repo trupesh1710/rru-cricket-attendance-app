@@ -7,7 +7,10 @@ import {
   where,
   orderBy,
   getDocs,
-  limit
+  limit,
+  doc,
+  deleteDoc,
+  getDoc
 } from 'firebase/firestore';
 
 /**
@@ -15,7 +18,7 @@ import {
  * @param {string} userId - User's UID
  * @param {object} location - User's location { latitude, longitude }
  * @param {number} distance - Distance from predefined location in meters
- * @param {string} status - Attendance status ('success' or 'out_of_range')
+ * @param {string} status - Attendance status ('success' or 'absent')
  * @returns {Promise<string>} Document ID of the attendance record
  */
 export const recordAttendance = async (userId, location, distance, status) => {
@@ -103,9 +106,96 @@ export const getStatusBadgeClass = (status) => {
   switch (status) {
     case 'success':
       return 'bg-green-500/20 text-green-400 border-green-500/30';
-    case 'out_of_range':
+    case 'absent':
       return 'bg-red-500/20 text-red-400 border-red-500/30';
     default:
       return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  }
+};
+
+/**
+ * Get all users (Admin only)
+ * @returns {Promise<Array>} Array of all users
+ */
+export const getAllUsers = async () => {
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const users = [];
+    querySnapshot.forEach((doc) => {
+      users.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    return users;
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    throw new Error(`Failed to load users: ${error.message}`);
+  }
+};
+
+/**
+ * Get all attendance records (Admin only)
+ * @param {number} maxRecords - Maximum number of records to fetch
+ * @returns {Promise<Array>} Array of all attendance records
+ */
+export const getAllAttendance = async (maxRecords = 1000) => {
+  try {
+    const attendanceRef = collection(db, 'attendance');
+    const q = query(
+      attendanceRef,
+      orderBy('timestamp', 'desc'),
+      limit(maxRecords)
+    );
+    const querySnapshot = await getDocs(q);
+    const records = [];
+    querySnapshot.forEach((doc) => {
+      records.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    return records;
+  } catch (error) {
+    console.error('Error fetching all attendance records:', error);
+    throw new Error(`Failed to load attendance records: ${error.message}`);
+  }
+};
+
+/**
+ * Delete a user (Admin only)
+ * @param {string} userId - User's UID
+ * @returns {Promise<void>}
+ */
+export const deleteUser = async (userId) => {
+  try {
+    await deleteDoc(doc(db, 'users', userId));
+    // Note: Firebase Auth user deletion requires admin SDK on server-side
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw new Error(`Failed to delete user: ${error.message}`);
+  }
+};
+
+/**
+ * Get user details by ID
+ * @param {string} userId - User's UID
+ * @returns {Promise<object|null>} User data or null if not found
+ */
+export const getUserById = async (userId) => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (userDoc.exists()) {
+      return {
+        id: userDoc.id,
+        ...userDoc.data()
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    throw new Error(`Failed to load user: ${error.message}`);
   }
 };

@@ -3,12 +3,18 @@ import LocationAttendanceScreen from './LocationAttendanceScreen.jsx';
 import ViewAttendanceScreen from './ViewAttendanceScreen.jsx';
 import UserProfileScreen from './UserProfileScreen.jsx';
 import ReportsScreen from './ReportsScreen.jsx';
+import AdminPanelScreen from './AdminPanelScreen.jsx';
+import UserManagementScreen from './UserManagementScreen.jsx';
+import AdminReportsScreen from './AdminReportsScreen.jsx';
 
 export default function Dashboard({ user, onLogout }) {
   const [showLocationAttendance, setShowLocationAttendance] = useState(false);
   const [showViewAttendance, setShowViewAttendance] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showReports, setShowReports] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showAdminReports, setShowAdminReports] = useState(false);
 
   if (showLocationAttendance) {
     return <LocationAttendanceScreen user={user} onBack={() => setShowLocationAttendance(false)} />;
@@ -16,7 +22,7 @@ export default function Dashboard({ user, onLogout }) {
 
   if (showViewAttendance) {
     return <ViewAttendanceScreen user={user} onBack={() => setShowViewAttendance(false)} />;
-  }
+  } 
 
   if (showUserProfile) {
     return <UserProfileScreen user={user} onBack={() => setShowUserProfile(false)} />;
@@ -24,6 +30,18 @@ export default function Dashboard({ user, onLogout }) {
 
   if (showReports) {
     return <ReportsScreen user={user} onBack={() => setShowReports(false)} />;
+  }
+
+  if (showAdminPanel) {
+    return <AdminPanelScreen onBack={() => setShowAdminPanel(false)} />;
+  }
+
+  if (showUserManagement) {
+    return <UserManagementScreen onBack={() => setShowUserManagement(false)} />;
+  }
+
+  if (showAdminReports) {
+    return <AdminReportsScreen onBack={() => setShowAdminReports(false)} />;
   }
 
   return (
@@ -72,11 +90,23 @@ export default function Dashboard({ user, onLogout }) {
 
             {user?.role === 'admin' && (
               <>
-                <button className="px-6 py-3 bg-yellow-600 rounded-xl font-semibold text-white border border-yellow-500 hover:bg-yellow-700 transition-all duration-300">
+                <button
+                  onClick={() => setShowAdminPanel(true)}
+                  className="px-6 py-3 bg-yellow-600 rounded-xl font-semibold text-white border border-yellow-500 hover:bg-yellow-700 transition-all duration-300"
+                >
                   Admin Panel
                 </button>
-                <button className="px-6 py-3 bg-red-600 rounded-xl font-semibold text-white border border-red-500 hover:bg-red-700 transition-all duration-300">
+                <button
+                  onClick={() => setShowUserManagement(true)}
+                  className="px-6 py-3 bg-red-600 rounded-xl font-semibold text-white border border-red-500 hover:bg-red-700 transition-all duration-300"
+                >
                   User Management
+                </button>
+                <button
+                  onClick={() => setShowAdminReports(true)}
+                  className="px-6 py-3 bg-purple-600 rounded-xl font-semibold text-white border border-purple-500 hover:bg-purple-700 transition-all duration-300"
+                >
+                  Admin Reports
                 </button>
               </>
             )}

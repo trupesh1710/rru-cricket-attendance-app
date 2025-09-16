@@ -61,7 +61,7 @@ export default function LocationAttendanceScreen({ user, onBack }) {
             accuracy: userLocation.accuracy
           },
           calculatedDistance,
-          'out_of_range'
+          'absent'
         );
         
         setStatus('out_of_range');

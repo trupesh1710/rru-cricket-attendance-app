@@ -27,8 +27,8 @@ export default function ViewAttendanceScreen({ user, onBack }) {
     switch (status) {
       case 'success':
         return 'Present';
-      case 'out_of_range':
-        return 'Out of Range';
+    case 'absent':
+      return 'Absent';
       default:
         return status;
     }

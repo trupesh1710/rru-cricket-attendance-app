@@ -157,6 +157,7 @@ export default function App() {
   const [fadeOut, setFadeOut] = useState(false);
   const [currentScreen, setCurrentScreen] = useState("auth");
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showAdminSuccessPopup, setShowAdminSuccessPopup] = useState(false);
   const { user, loading, logout } = useAuth();
 
   useEffect(() => {
@@ -170,7 +171,7 @@ export default function App() {
 
   useEffect(() => {
     // If registration success popup is showing, do not redirect to dashboard
-    if (showSuccessPopup) {
+    if (showSuccessPopup || showAdminSuccessPopup) {
       return;
     }
     // If user is authenticated and we're not on dashboard, redirect to dashboard
@@ -181,12 +182,15 @@ export default function App() {
     else if (!user && currentScreen === "dashboard") {
       setCurrentScreen("auth");
     }
-  }, [user, currentScreen, showSuccessPopup]);
+  }, [user, currentScreen, showSuccessPopup, showAdminSuccessPopup]);
 
   const handleAuth = (userData, userType) => {
     // Auth is now handled by the useAuth hook, this is just for navigation
     if (userType === "register") {
       setShowSuccessPopup(true);
+    } else if (userType === "admin") {
+      // For admin user, show admin login success popup
+      setShowAdminSuccessPopup(true);
     } else {
       setCurrentScreen("dashboard");
     }
@@ -200,6 +204,11 @@ export default function App() {
       console.error("Logout error:", error);
     }
     setCurrentScreen("auth");
+  };
+
+  const handleAdminPopupClose = () => {
+    setShowAdminSuccessPopup(false);
+    setCurrentScreen("dashboard");
   };
 
   const handleLogout = async () => {
@@ -261,7 +270,20 @@ export default function App() {
           </div>
         </div>
       )}
+      {showAdminSuccessPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl p-8 max-w-md w-full mx-6">
+            <h2 className="text-xl font-bold text-white mb-4 text-center">Admin Login Successful</h2>
+            <p className="text-slate-300 mb-6 text-center">You have been logged in as an administrator!</p>
+            <button
+              onClick={handleAdminPopupClose}
+              className="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
-

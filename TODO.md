@@ -1,9 +1,5 @@
-# TODO - Password Reset Flow Testing
+# TODO: Change 'out_of_range' to 'absent' in Attendance Status
 
-- [ ] Test sending OTP to the registered email.
-- [ ] Verify OTP input and validation.
-- [ ] Enter new password twice and check for matching validation.
-- [ ] Submit new password and confirm success message.
-- [ ] Verify that the password is updated in Firebase Authentication.
-- [ ] Test login with the new password to confirm reset success.
-- [ ] Check for error handling on invalid OTP or mismatched passwords.
+- [x] Update AttendanceService.js: Change 'out_of_range' to 'absent' in JSDoc comment and getStatusBadgeClass function
+- [x] Update ViewAttendanceScreen.jsx: Change case 'out_of_range' to 'absent' in getStatusText function
+- [x] Update LocationAttendanceScreen.jsx: Change 'out_of_range' to 'absent' in recordAttendance call
