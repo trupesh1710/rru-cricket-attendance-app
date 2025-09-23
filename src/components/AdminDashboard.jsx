@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getAllUsers, getAllAttendance } from '../utils/AttendanceService';
+import UserManagementScreen from './UserManagementScreen';
+import AttendanceManagementScreen from './AttendanceManagementScreen';
+import AdminReportsScreen from './AdminReportsScreen';
 
 export default function AdminDashboard({ user, onLogout, onBackToMain }) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showAttendanceManagement, setShowAttendanceManagement] = useState(false);
+  const [showAdminReports, setShowAdminReports] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalAttendance: 0,
@@ -19,15 +25,23 @@ export default function AdminDashboard({ user, onLogout, onBackToMain }) {
   const fetchStats = async () => {
     try {
       setLoading(true);
+      setError('');
+
+      console.log('Fetching dashboard statistics...');
+
       const [users, attendance] = await Promise.all([
         getAllUsers(),
         getAllAttendance(1000)
       ]);
 
+      console.log('Users fetched:', users.length);
+      console.log('Attendance records fetched:', attendance.length);
+
       const today = new Date().toDateString();
-      const todayAttendance = attendance.filter(record =>
-        new Date(record.timestamp?.toDate?.() || record.timestamp).toDateString() === today
-      );
+      const todayAttendance = attendance.filter(record => {
+        const recordDate = record.timestamp?.toDate?.() || new Date(record.timestamp);
+        return recordDate.toDateString() === today;
+      });
 
       setStats({
         totalUsers: users.length,
@@ -35,9 +49,17 @@ export default function AdminDashboard({ user, onLogout, onBackToMain }) {
         todayAttendance: todayAttendance.length,
         activeUsers: users.filter(user => user.role !== 'inactive').length
       });
+
+      console.log('Stats calculated:', {
+        totalUsers: users.length,
+        totalAttendance: attendance.length,
+        todayAttendance: todayAttendance.length,
+        activeUsers: users.filter(user => user.role !== 'inactive').length
+      });
+
     } catch (err) {
-      setError('Failed to load dashboard statistics');
-      console.error('Error fetching stats:', err);
+      console.error('Error fetching dashboard stats:', err);
+      setError(`Failed to load dashboard statistics: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -225,13 +247,15 @@ export default function AdminDashboard({ user, onLogout, onBackToMain }) {
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">User Management</h2>
                 <button
-                  onClick={() => {/* TODO: Add refresh functionality */}}
+                  onClick={fetchStats}
                   className="px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600/30 hover:text-white transition-all duration-300"
                 >
                   Refresh
                 </button>
               </div>
-              <p className="text-slate-300">Click the "User Management" button in the main dashboard to access detailed user management features.</p>
+              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                <UserManagementScreen onBack={() => setActiveTab('overview')} />
+              </div>
             </div>
           )}
 
@@ -240,13 +264,15 @@ export default function AdminDashboard({ user, onLogout, onBackToMain }) {
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Attendance Records</h2>
                 <button
-                  onClick={() => {/* TODO: Add refresh functionality */}}
+                  onClick={fetchStats}
                   className="px-4 py-2 bg-green-600/20 border border-green-500/30 rounded-xl text-green-300 hover:bg-green-600/30 hover:text-white transition-all duration-300"
                 >
                   Refresh
                 </button>
               </div>
-              <p className="text-slate-300">Click the "View Attendance" button in the main dashboard to access detailed attendance management features.</p>
+              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                <AttendanceManagementScreen onBack={() => setActiveTab('overview')} />
+              </div>
             </div>
           )}
 
@@ -255,13 +281,15 @@ export default function AdminDashboard({ user, onLogout, onBackToMain }) {
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Reports & Analytics</h2>
                 <button
-                  onClick={() => {/* TODO: Add refresh functionality */}}
+                  onClick={fetchStats}
                   className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 rounded-xl text-purple-300 hover:bg-purple-600/30 hover:text-white transition-all duration-300"
                 >
                   Refresh
                 </button>
               </div>
-              <p className="text-slate-300">Click the "Generate Reports" button in the main dashboard to access detailed reporting and analytics features.</p>
+              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                <AdminReportsScreen onBack={() => setActiveTab('overview')} />
+              </div>
             </div>
           )}
         </div>

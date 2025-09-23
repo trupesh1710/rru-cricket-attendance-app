@@ -7,6 +7,9 @@ import AdminLoginScreen from "./components/AdminLoginScreen.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import AdminSuccessScreen from "./components/AdminSuccessScreen.jsx";
 import AdminDashboard from "./components/AdminDashboard.jsx";
+import UserManagementScreen from "./components/UserManagementScreen.jsx";
+import AttendanceManagementScreen from "./components/AttendanceManagementScreen.jsx";
+import AdminReportsScreen from "./components/AdminReportsScreen.jsx";
 import { useAuth } from "./hooks/useAuth";
 
 export default function App() {
@@ -16,6 +19,9 @@ export default function App() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showAdminSuccessScreen, setShowAdminSuccessScreen] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showAttendanceManagement, setShowAttendanceManagement] = useState(false);
+  const [showAdminReports, setShowAdminReports] = useState(false);
   const { user, loading, logout } = useAuth();
 
   useEffect(() => {

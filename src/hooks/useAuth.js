@@ -5,7 +5,6 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
-  signInWithCustomToken,
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -89,9 +88,7 @@ export function useAuth() {
   const logout = async () => {
     try {
       setError(null);
-      // Sign out from Firebase Auth (for regular users)
       await signOut(auth);
-      // Also clear user state (for admin users and any other cases)
       setUser(null);
     } catch (err) {
       setError(err.message);
@@ -115,17 +112,28 @@ export function useAuth() {
         throw new Error('Invalid admin credentials');
       }
 
-      // Create admin user object without Firebase Auth
-      const adminUser = {
-        uid: adminId,
+      // Create Firebase Auth user for admin with a temporary email
+      const tempEmail = `${adminId}@admin.local`;
+      const tempPassword = `temp_${adminId}_${Date.now()}`;
+
+      // Create a temporary Firebase Auth user for admin
+      const userCredential = await createUserWithEmailAndPassword(auth, tempEmail, tempPassword);
+
+      // Update the user profile with admin information
+      await updateProfile(userCredential.user, {
+        displayName: adminData.name
+      });
+
+      // Create or update user document with admin role
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
         name: adminData.name,
         email: adminData.email,
         role: 'admin',
-        type: 'admin'
-      };
-      setUser(adminUser);
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
 
-      return adminUser;
+      return userCredential.user;
     } catch (err) {
       setError(err.message);
       throw err;
