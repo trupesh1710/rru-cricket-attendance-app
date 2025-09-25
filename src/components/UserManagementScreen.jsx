@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllUsers, deleteUser } from '../utils/AttendanceService';
 
-export default function UserManagementScreen({ onBack }) {
+export default function UserManagementScreen({ onBack, embedded = false }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -110,7 +110,7 @@ export default function UserManagementScreen({ onBack }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className={`text-white ${embedded ? 'p-4' : 'min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
       </div>
     );
@@ -118,29 +118,31 @@ export default function UserManagementScreen({ onBack }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-red-400 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className={`text-red-400 ${embedded ? 'p-4' : 'min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}>
         <p>{error}</p>
-        <button onClick={onBack} className="mt-4 px-4 py-2 bg-red-600 rounded">Back</button>
+        {!embedded && <button onClick={onBack} className="mt-4 px-4 py-2 bg-red-600 rounded">Back</button>}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <div className="max-w-7xl mx-auto">
+    <div className={`${embedded ? '' : 'min-h-screen p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'} text-white`}>
+      <div className={`${embedded ? '' : 'max-w-7xl mx-auto'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={onBack} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition">Back</button>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={fetchUsers}
-              className="px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600/30 hover:text-white transition-all duration-300"
-            >
-              Refresh
-            </button>
+        {!embedded && (
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={onBack} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition">Back</button>
+            <h1 className="text-3xl font-bold">User Management</h1>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={fetchUsers}
+                className="px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600/30 hover:text-white transition-all duration-300"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -196,68 +198,125 @@ export default function UserManagementScreen({ onBack }) {
           </div>
         </div>
 
-        {/* Users Table */}
+        {/* Users List */}
         {filteredUsers.length === 0 ? (
           <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-8 text-center">
             <p className="text-slate-300">No users found matching your criteria.</p>
           </div>
         ) : (
-          <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-white/5">
-                  <tr>
-                    <th className="px-4 py-3 text-left">
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
-                        onChange={handleSelectAll}
-                        className="rounded border-white/20 text-blue-600 focus:ring-blue-500"
-                      />
-                    </th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Name</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Email</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Role</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Created</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map(user => (
-                    <tr key={user.id} className="border-b border-white/10 hover:bg-white/5">
-                      <td className="px-4 py-3">
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-white/5">
+                    <tr>
+                      <th className="px-4 py-3 text-left">
                         <input
                           type="checkbox"
-                          checked={selectedUsers.has(user.id)}
-                          onChange={() => handleSelectUser(user.id)}
+                          checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                          onChange={handleSelectAll}
                           className="rounded border-white/20 text-blue-600 focus:ring-blue-500"
                         />
-                      </td>
-                      <td className="px-4 py-3">{user.name || 'N/A'}</td>
-                      <td className="px-4 py-3">{user.email || 'N/A'}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeClass(user.role)}`}>
-                          {user.role || 'user'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-400">
-                        {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString() : 'N/A'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          disabled={deletingUserId === user.id}
-                          className="px-3 py-1 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300 disabled:opacity-50"
-                        >
-                          {deletingUserId === user.id ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </td>
+                      </th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Name</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Email</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Role</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Created</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map(user => (
+                      <tr key={user.id} className="border-b border-white/10 hover:bg-white/5">
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.has(user.id)}
+                            onChange={() => handleSelectUser(user.id)}
+                            className="rounded border-white/20 text-blue-600 focus:ring-blue-500"
+                          />
+                        </td>
+                        <td className="px-4 py-3">{user.name || 'N/A'}</td>
+                        <td className="px-4 py-3">{user.email || 'N/A'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeClass(user.role)}`}>
+                            {user.role || 'user'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-400">
+                          {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            disabled={deletingUserId === user.id}
+                            className="px-3 py-1 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300 disabled:opacity-50"
+                          >
+                            {deletingUserId === user.id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <label className="flex items-center text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                    onChange={handleSelectAll}
+                    className="mr-2 rounded border-white/20 text-blue-600 focus:ring-blue-500"
+                  />
+                  Select All
+                </label>
+                {selectedUsers.size > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-3 py-1 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300"
+                  >
+                    Delete Selected ({selectedUsers.size})
+                  </button>
+                )}
+              </div>
+              {filteredUsers.map(user => (
+                <div key={user.id} className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.has(user.id)}
+                        onChange={() => handleSelectUser(user.id)}
+                        className="mr-3 rounded border-white/20 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <h3 className="text-white font-medium">{user.name || 'N/A'}</h3>
+                        <p className="text-slate-400 text-sm">{user.email || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeClass(user.role)}`}>
+                      {user.role || 'user'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-slate-400 mb-3">
+                    Created: {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString() : 'N/A'}
+                  </div>
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    disabled={deletingUserId === user.id}
+                    className="w-full px-4 py-2 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300 disabled:opacity-50"
+                  >
+                    {deletingUserId === user.id ? 'Deleting...' : 'Delete User'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

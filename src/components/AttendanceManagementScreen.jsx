@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllAttendance, getAllUsers } from '../utils/AttendanceService';
 
-export default function AttendanceManagementScreen({ onBack }) {
+export default function AttendanceManagementScreen({ onBack, embedded = false }) {
   const [attendance, setAttendance] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -133,7 +133,7 @@ export default function AttendanceManagementScreen({ onBack }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className={`text-white ${embedded ? 'p-4' : 'min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
       </div>
     );
@@ -141,29 +141,31 @@ export default function AttendanceManagementScreen({ onBack }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-red-400 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className={`text-red-400 ${embedded ? 'p-4' : 'min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}>
         <p>{error}</p>
-        <button onClick={onBack} className="mt-4 px-4 py-2 bg-red-600 rounded">Back</button>
+        {!embedded && <button onClick={onBack} className="mt-4 px-4 py-2 bg-red-600 rounded">Back</button>}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <div className="max-w-7xl mx-auto">
+    <div className={`${embedded ? '' : 'min-h-screen p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'} text-white`}>
+      <div className={`${embedded ? '' : 'max-w-7xl mx-auto'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={onBack} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition">Back</button>
-          <h1 className="text-3xl font-bold">Attendance Management</h1>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={fetchData}
-              className="px-4 py-2 bg-green-600/20 border border-green-500/30 rounded-xl text-green-300 hover:bg-green-600/30 hover:text-white transition-all duration-300"
-            >
-              Refresh
-            </button>
+        {!embedded && (
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={onBack} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition">Back</button>
+            <h1 className="text-3xl font-bold">Attendance Management</h1>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={fetchData}
+                className="px-4 py-2 bg-green-600/20 border border-green-500/30 rounded-xl text-green-300 hover:bg-green-600/30 hover:text-white transition-all duration-300"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -227,81 +229,147 @@ export default function AttendanceManagementScreen({ onBack }) {
           </div>
         </div>
 
-        {/* Attendance Table */}
+        {/* Attendance Records List */}
         {filteredAttendance.length === 0 ? (
           <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-8 text-center">
             <p className="text-slate-300">No attendance records found matching your criteria.</p>
           </div>
         ) : (
-          <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-white/5">
-                  <tr>
-                    <th className="px-4 py-3 text-left">
-                      <input
-                        type="checkbox"
-                        checked={selectedRecords.size === filteredAttendance.length && filteredAttendance.length > 0}
-                        onChange={handleSelectAll}
-                        className="rounded border-white/20 text-green-600 focus:ring-green-500"
-                      />
-                    </th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">User</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Email</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Status</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Distance</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Location</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Timestamp</th>
-                    <th className="px-4 py-3 text-left text-slate-300 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAttendance.map(record => (
-                    <tr key={record.id} className="border-b border-white/10 hover:bg-white/5">
-                      <td className="px-4 py-3">
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-white/5">
+                    <tr>
+                      <th className="px-4 py-3 text-left">
                         <input
                           type="checkbox"
-                          checked={selectedRecords.has(record.id)}
-                          onChange={() => handleSelectRecord(record.id)}
+                          checked={selectedRecords.size === filteredAttendance.length && filteredAttendance.length > 0}
+                          onChange={handleSelectAll}
                           className="rounded border-white/20 text-green-600 focus:ring-green-500"
                         />
-                      </td>
-                      <td className="px-4 py-3">{getUserName(record.userId)}</td>
-                      <td className="px-4 py-3 text-slate-400">{getUserEmail(record.userId)}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(record.status)}`}>
-                          {record.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-400">
-                        {record.distance ? `${Math.round(record.distance)}m` : 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-slate-400">
-                        {record.location ? `${record.location.latitude.toFixed(4)}, ${record.location.longitude.toFixed(4)}` : 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-slate-400">
-                        {formatTimestamp(record.timestamp)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => {/* TODO: Add edit functionality */}}
-                          className="px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600/30 hover:text-white transition-all duration-300 mr-2"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => {/* TODO: Add delete functionality */}}
-                          className="px-3 py-1 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300"
-                        >
-                          Delete
-                        </button>
-                      </td>
+                      </th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">User</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Email</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Status</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Distance</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Location</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Timestamp</th>
+                      <th className="px-4 py-3 text-left text-slate-300 font-medium">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredAttendance.map(record => (
+                      <tr key={record.id} className="border-b border-white/10 hover:bg-white/5">
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedRecords.has(record.id)}
+                            onChange={() => handleSelectRecord(record.id)}
+                            className="rounded border-white/20 text-green-600 focus:ring-green-500"
+                          />
+                        </td>
+                        <td className="px-4 py-3">{getUserName(record.userId)}</td>
+                        <td className="px-4 py-3 text-slate-400">{getUserEmail(record.userId)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(record.status)}`}>
+                            {record.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-400">
+                          {record.distance ? `${Math.round(record.distance)}m` : 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 text-slate-400">
+                          {record.location ? `${record.location.latitude.toFixed(4)}, ${record.location.longitude.toFixed(4)}` : 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 text-slate-400">
+                          {formatTimestamp(record.timestamp)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => {/* TODO: Add edit functionality */}}
+                            className="px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600/30 hover:text-white transition-all duration-300 mr-2"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {/* TODO: Add delete functionality */}}
+                            className="px-3 py-1 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <label className="flex items-center text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={selectedRecords.size === filteredAttendance.length && filteredAttendance.length > 0}
+                    onChange={handleSelectAll}
+                    className="mr-2 rounded border-white/20 text-green-600 focus:ring-green-500"
+                  />
+                  Select All
+                </label>
+                {selectedRecords.size > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-3 py-1 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300"
+                  >
+                    Delete Selected ({selectedRecords.size})
+                  </button>
+                )}
+              </div>
+              {filteredAttendance.map(record => (
+                <div key={record.id} className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedRecords.has(record.id)}
+                        onChange={() => handleSelectRecord(record.id)}
+                        className="mr-3 rounded border-white/20 text-green-600 focus:ring-green-500"
+                      />
+                      <div>
+                        <h3 className="text-white font-medium">{getUserName(record.userId)}</h3>
+                        <p className="text-slate-400 text-sm">{getUserEmail(record.userId)}</p>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(record.status)}`}>
+                      {record.status}
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-sm text-slate-400 mb-3">
+                    <div>Distance: {record.distance ? `${Math.round(record.distance)}m` : 'N/A'}</div>
+                    <div>Location: {record.location ? `${record.location.latitude.toFixed(4)}, ${record.location.longitude.toFixed(4)}` : 'N/A'}</div>
+                    <div>Time: {formatTimestamp(record.timestamp)}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {/* TODO: Add edit functionality */}}
+                      className="flex-1 px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600/30 hover:text-white transition-all duration-300"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {/* TODO: Add delete functionality */}}
+                      className="flex-1 px-4 py-2 bg-red-600/20 border border-red-500/30 rounded-xl text-red-300 hover:bg-red-600/30 hover:text-white transition-all duration-300"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

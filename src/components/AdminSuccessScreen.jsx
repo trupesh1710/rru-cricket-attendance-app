@@ -42,29 +42,6 @@ export default function AdminSuccessScreen({ user, onContinue, onLogout }) {
             </p>
           </div>
 
-          {/* Admin Privileges */}
-          <div className="bg-white/5 rounded-2xl border border-white/10 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Administrator Privileges</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-slate-300">User Management</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-slate-300">Attendance Records</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-slate-300">System Reports</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-slate-300">Administrative Controls</span>
-              </div>
-            </div>
-          </div>
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button

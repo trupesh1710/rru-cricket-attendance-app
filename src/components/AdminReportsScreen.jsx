@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllUsers, getAllAttendance } from '../utils/AttendanceService';
 
-export default function AdminReportsScreen({ onBack }) {
+export default function AdminReportsScreen({ onBack, embedded = false }) {
   const [users, setUsers] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -225,7 +225,8 @@ export default function AdminReportsScreen({ onBack }) {
           </button>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
+        {/* Desktop Table View */}
+        <div className="hidden md:block bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-white/5">
@@ -257,6 +258,38 @@ export default function AdminReportsScreen({ onBack }) {
             </table>
           </div>
         </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {userReport.map((user, index) => (
+            <div key={index} className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
+              <div className="mb-3">
+                <h3 className="text-white font-medium">{user.name}</h3>
+                <p className="text-slate-400 text-sm">{user.email}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-slate-400">Total:</span>
+                  <span className="text-white ml-2">{user.total}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Success:</span>
+                  <span className="text-green-400 ml-2">{user.success}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Absent:</span>
+                  <span className="text-red-400 ml-2">{user.absent}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Rate:</span>
+                  <span className={`ml-2 font-bold ${parseFloat(user.attendanceRate) >= 80 ? 'text-green-400' : parseFloat(user.attendanceRate) >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    {user.attendanceRate}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
@@ -274,7 +307,8 @@ export default function AdminReportsScreen({ onBack }) {
           </button>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
+        {/* Desktop Table View */}
+        <div className="hidden md:block bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-white/5">
@@ -304,13 +338,44 @@ export default function AdminReportsScreen({ onBack }) {
             </table>
           </div>
         </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {dailyReport.map((day, index) => (
+            <div key={index} className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
+              <div className="mb-3">
+                <h3 className="text-white font-medium">{new Date(day.date).toLocaleDateString()}</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-slate-400">Total:</span>
+                  <span className="text-white ml-2">{day.total}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Success:</span>
+                  <span className="text-green-400 ml-2">{day.success}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Absent:</span>
+                  <span className="text-red-400 ml-2">{day.absent}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Rate:</span>
+                  <span className={`ml-2 font-bold ${parseFloat(day.successRate) >= 80 ? 'text-green-400' : parseFloat(day.successRate) >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    {day.successRate}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className={`text-white ${embedded ? 'p-4' : 'min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
       </div>
     );
@@ -318,29 +383,31 @@ export default function AdminReportsScreen({ onBack }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-red-400 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className={`text-red-400 ${embedded ? 'p-4' : 'min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}>
         <p>{error}</p>
-        <button onClick={onBack} className="mt-4 px-4 py-2 bg-red-600 rounded">Back</button>
+        {!embedded && <button onClick={onBack} className="mt-4 px-4 py-2 bg-red-600 rounded">Back</button>}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <div className="max-w-7xl mx-auto">
+    <div className={`${embedded ? '' : 'min-h-screen p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'} text-white`}>
+      <div className={`${embedded ? '' : 'max-w-7xl mx-auto'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={onBack} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition">Back</button>
-          <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={fetchData}
-              className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 rounded-xl text-purple-300 hover:bg-purple-600/30 hover:text-white transition-all duration-300"
-            >
-              Refresh
-            </button>
+        {!embedded && (
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={onBack} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition">Back</button>
+            <h1 className="text-3xl font-bold">Reports & Analytics</h1>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={fetchData}
+                className="px-4 py-2 bg-purple-600/20 border border-purple-500/30 rounded-xl text-purple-300 hover:bg-purple-600/30 hover:text-white transition-all duration-300"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Controls */}
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-6 mb-6">
